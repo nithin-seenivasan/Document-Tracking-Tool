@@ -11,12 +11,27 @@ Option Compare Database
 
 Private Sub Command345_Click()
 Set tabCtl = Forms!AddScope!TabControl
+
+'Control to ensure a supplier is selected (18.05.21)
+If Nz(supplier_name.Value, 0) = 0 Or Nz(contract_name.Value, 0) = 0 Then
+MsgBox "Please select the values from the dropdown boxes first"
+
+Else
 tabCtl.Value = 1
+
+End If
 End Sub
 
 Private Sub Command714_Click()
-Set tabCtl = Forms!AddScope!TabControl
-tabCtl.Value = 2
+
+'check if all fields tagged "BlkChk" is filled
+MainFormCode.CheckUserEntry ("AddScope")
+
+If AllFieldsComplete = True Then
+    Set tabCtl = Forms!AddScope!TabControl
+    tabCtl.Value = 2
+End If
+
 End Sub
 
 Private Sub Command865_Click()
@@ -33,9 +48,11 @@ Private Sub Command874_Click()
 'Writes Data to the ProjectData and DocumentData tables
     
     DoCmd.SetWarnings False
+    
+
         
     'add data to table ProjectData
-    ssql = "INSERT INTO ProjectData(project_id, subsuppliers_id, subsuppliers_name, scope, contract_form, supplier_contact_name, supplier_contact_phone, supplier_contact_email, contract_date, start_erection_date, mech_completion_date) VALUES('" & Me.contract_name.Column(1) & "','" & Me.supplier_name.Column(1) & "','" & Me.supplier_name.Column(0) & "','" & Me.scope & "','" & Me.contract_form & "','" & Me.supplier_contact_name & "','" & Me.supplier_contact_phone & "','" & Me.supplier_contact_email & "','" & Me.C & "','" & Me.S & "','" & Me.W & "')"
+    ssql = "INSERT INTO ProjectData(project_id, subsuppliers_id, subsuppliers_name, scope, contract_form, supplier_contact_name, supplier_contact_phone, supplier_contact_email, contract_date, start_erection_date, mech_completion_date, PO_Number) VALUES('" & Me.contract_name.Column(1) & "','" & Me.supplier_name.Column(1) & "','" & Me.supplier_name.Column(0) & "','" & Me.scope & "','" & Me.contract_form & "','" & Me.supplier_contact_name & "','" & Me.supplier_contact_phone & "','" & Me.supplier_contact_email & "','" & Me.C & "','" & Me.S & "','" & Me.W & "','" & Me.PO_number & "')"
     DoCmd.RunSQL ssql
     'Find the ID of ProjectData
     ProjectDataID = DMax("ID", "ProjectData")
@@ -58,6 +75,8 @@ Private Sub Command874_Click()
         i = i + 1
         rs.MoveNext
     Loop
+    'Write to user tracking
+    UserTracking.Login_Tracking ("New Scope Added for (project name),(supplier),(equipment/scope): " & [contract_name] & "," & [supplier_name] & "," & [scope])
     
     DoCmd.SetWarnings True
     
@@ -68,4 +87,9 @@ Private Sub Command874_Click()
     
     
 End Sub
+
+Private Sub contract_name_AfterUpdate()
+supplier_name.Visible = True
+End Sub
+
 
