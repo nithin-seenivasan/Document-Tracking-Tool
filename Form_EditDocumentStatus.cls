@@ -20,14 +20,14 @@ Private Sub Command8_Click()
 x = Nz([scope], 0)
 y = Nz([project_id], 0)
 z = Nz([subsuppliers_name], 0)
-a = Nz([DocumentTitle], 0)
+A = Nz([DocumentTitle], 0)
 
-If x = 0 Or y = 0 Or z = 0 Or a = 0 Then
+If x = 0 Or y = 0 Or z = 0 Or A = 0 Then
     MsgBox "Please enter all the data to filter"
 Else
     DoCmd.Close
     'Filters based on 3 clauses
-    DoCmd.OpenForm "EditEachDocumentData", , , "[scope]=" & "'" & x & "'" & "And" & "[contract_name]=" & "'" & y & "'" & "And" & "[supplier_name]=" & "'" & z & "'" & "And" & "[DocumentTitle]=" & "'" & a & "'"
+    DoCmd.OpenForm "EditEachDocumentData", , , "[scope]=" & "'" & x & "'" & "And" & "[contract_name]=" & "'" & y & "'" & "And" & "[supplier_name]=" & "'" & z & "'" & "And" & "[DocumentTitle]=" & "'" & A & "'"
 
 End If
 
@@ -37,10 +37,22 @@ End Sub
 
 
 
+
 Private Sub project_id_AfterUpdate()
 
 'After Project Name is selected, set the Row Source for Supplier name.
 subsuppliers_name.RowSource = "SELECT DISTINCT ProjectData.subsuppliers_name FROM ProjectData WHERE ProjectData.project_id = " & Me.project_id.Column(1) & ";"
+If subsuppliers_name.listCount > 0 Then
+    subsuppliers_name.Visible = True
+Else
+    MsgBox "No data for this selection"
+    subsuppliers_name.Visible = False
+    scope.Visible = False
+    IncludeDeleted.Visible = False
+    DocumentTitle.Visible = False
+    Command8.Visible = False
+End If
+
 
 
 End Sub
@@ -55,6 +67,15 @@ scope.RowSource = "SELECT DISTINCT ProjectData.scope FROM ProjectData WHERE Proj
 
 'LEsson Learnt -> If you want to put a number variable inside a string, simply break the string using a ", add variable between two &s, add another " and continue with statement. For a string variable, add ' (see above, Y)
 
+If scope.listCount > 0 Then
+    scope.Visible = True
+Else
+    MsgBox "No data for this selection"
+    scope.Visible = False
+    IncludeDeleted.Visible = False
+    DocumentTitle.Visible = False
+    Command8.Visible = False
+End If
 End Sub
 
 
@@ -62,8 +83,8 @@ Private Sub scope_AfterUpdate()
 'Sets the document title to only those marked not deleted
 
 x = Nz(Me.project_id.Column(1), 0) 'ProjectID selected
-y = Nz(Me.subsuppliers_name, a) 'Subsupplier name selected
-z = Nz(Me.scope, a) 'Scope selected
+y = Nz(Me.subsuppliers_name, A) 'Subsupplier name selected
+z = Nz(Me.scope, A) 'Scope selected
 
 'After Proj/Supplier/Scope is selected, set row source for DocumentTitle
 
@@ -71,6 +92,16 @@ z = Nz(Me.scope, a) 'Scope selected
 e = DLookup("ProjectData.ID", "ProjectData", "ProjectData.project_id = " & x & " AND ProjectData.subsuppliers_name = '" & y & "' AND ProjectData.scope = '" & z & "'")
 'Set rowsource of the Documents list here
 DocumentTitle.RowSource = "SELECT DISTINCT DocumentData.DocumentTitle FROM DocumentData WHERE DocumentData.ProjectDataID = " & e & " AND DocumentData.Deleted = False ;"
+
+If DocumentTitle.listCount > 0 Then
+    DocumentTitle.Visible = True
+    IncludeDeleted.Visible = True
+Else
+    MsgBox "No data for this selection"
+    IncludeDeleted.Visible = False
+    DocumentTitle.Visible = False
+    Command8.Visible = False
+End If
 
 
 End Sub
@@ -80,8 +111,8 @@ Private Sub IncludeDeleted_AfterUpdate()
 'Includes deleted items also
 
 x = Nz(Me.project_id.Column(1), 0) 'ProjectID selected
-y = Nz(Me.subsuppliers_name, a) 'Subsupplier name selected
-z = Nz(Me.scope, a) 'Scope selected
+y = Nz(Me.subsuppliers_name, A) 'Subsupplier name selected
+z = Nz(Me.scope, A) 'Scope selected
 chkbox = Me.IncludeDeleted
 
 'After Proj/Supplier/Scope is selected, set row source for DocumentTitle
@@ -91,10 +122,15 @@ If chkbox = True Then
     e = DLookup("ProjectData.ID", "ProjectData", "ProjectData.project_id = " & x & " AND ProjectData.subsuppliers_name = '" & y & "' AND ProjectData.scope = '" & z & "'")
     'Set rowsource of the Documents list here
     DocumentTitle.RowSource = "SELECT DISTINCT DocumentData.DocumentTitle FROM DocumentData WHERE DocumentData.ProjectDataID = " & e & ";"
-
+    
 Else
     Call scope_AfterUpdate
-
 End If
+
+End Sub
+
+Private Sub DocumentTitle_AfterUpdate()
+
+Command8.Visible = True
 
 End Sub
