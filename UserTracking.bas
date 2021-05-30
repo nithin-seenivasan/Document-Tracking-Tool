@@ -4,6 +4,8 @@ Option Compare Database
 Sub Login_Tracking(Optional Splash As String = "Null")
 
 'tracks who opened and when
+  'Completely flexible - Can write into any string as required 
+  'This function is used throughout the database
 
 Dim dbs As DAO.Database
 Set dbs = CurrentDb
