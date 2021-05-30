@@ -13,6 +13,9 @@ Option Compare Database
 
 Private Sub SaveClose_Click()
 
+
+UserTracking.Login_Tracking ("Document Modified for (project name),(supplier),(equipment/scope), (Doc.Number): " & [contract_name] & "," & [supplier_name] & "," & [scope] & "," & [DocumentNumber])
+
 DoCmd.Close
 DoCmd.OpenForm "EditDocumentStatus"
 
